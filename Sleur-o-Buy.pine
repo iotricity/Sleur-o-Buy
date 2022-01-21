@@ -1,0 +1,72 @@
+//
+// © CryptoSleur - Twitter @CryptoKaren6 - GitHub iotricity
+//
+// This is a work in progress, the code is as-is, not a financial advise, no claims can be made, do your own research.
+//
+//@version=5
+
+// add bars from pivot https://stackoverflow.com/questions/63367231/pinescript-get-index-of-pivothigh
+
+indicator("Sleur-o-Buy", overlay = true)
+
+// Constants and time frames
+temaperiod = 11
+timeFrame = "20"
+currentClose = request.security(syminfo.tickerid, timeFrame, ta.sma(close, 3), gaps=barmerge.gaps_on)
+currentOpen = request.security(syminfo.tickerid, timeFrame, ta.sma(open, 3), gaps=barmerge.gaps_on)
+currentHigh = request.security(syminfo.tickerid, timeFrame, ta.sma(high, 3), gaps=barmerge.gaps_on)
+currentLow = request.security(syminfo.tickerid, timeFrame, ta.sma(low, 3), gaps=barmerge.gaps_on)
+
+// Calculate current RSI
+currentRSI = ta.rsi(currentClose, 14)
+currentMFI = ta.mfi(currentClose, 14)
+
+// Calculate Triple EMA
+ema1 = ta.ema(currentClose, temaperiod)
+ema2 = ta.ema(ema1, temaperiod)
+ema3 = ta.ema(ema2, temaperiod)
+currentTema = 3 * (ema1 - ema2) + ema3
+
+// Define EMA Short, Medium and Long periods
+emaShort = ta.ema(currentClose, 15)
+emaMedium = ta.ema(currentClose, 55)
+emaLong = ta.ema(currentClose, 200)
+
+// Calculate Bollinger Bands
+devBB = 2.0 * ta.stdev(currentClose, 20)
+basisBB = ta.sma(currentClose, 20)
+upperBB = basisBB + devBB
+lowerBB = basisBB - devBB
+
+// Calculate MACD
+[macdLine, signalLine, histLine] = ta.macd(currentClose, 12, 26, 9)
+
+
+myTooltip = str.tostring((math.abs(currentTema - lowerBB) / currentClose) * 100)
+// label.new(bar_index, currentLow, color = na, textcolor = color.blue, size = size.large, text='#', tooltip=myTooltip)
+buyTemaOnLowerBB = ((math.abs(currentTema[2] - lowerBB[2]) / currentClose[2]) * 100) < 0.5 and ((math.abs(currentTema - lowerBB) / currentClose) * 100) > 0.75
+sellTemaOnUpperBB = ((math.abs(currentTema[2] - upperBB[2]) / currentClose[2]) * 100) < 0.5 and ((math.abs(currentTema - upperBB) / currentClose) * 100) > 0.75
+
+buySignal = buyTemaOnLowerBB or ta.crossover(macdLine, signalLine)
+
+sellSignal = sellTemaOnUpperBB or (ta.pivothigh(currentTema, 3, 1) and ta.rising(upperBB, 2)) and ta.falling(ta.mfi(currentClose, 14), 3) and not ta.rising(signalLine, 10)
+
+pivotcolor = buySignal ? color.new(color.green, 90) : sellSignal ? color.new(color.red, 90) : na
+superbuy = buySignal and currentMFI < 35 ? color.new(color.lime, 0) : na
+
+// Do some temporary coloring
+//bbFillColor = currentHigh >= upperBB ? color.new(color.aqua, 90) : currentLow <= lowerBB ? color.new(color.orange, 90) : na
+//bbLineColor = currentHigh >= upperBB ? color.aqua : currentLow <= lowerBB ? color.orange : color.gray
+//plot(basisBB, title='BB Middle', color=color.red, linewidth=2)
+//p1 = plot(upperBB, title='BB Upper', color=bbLineColor)
+//p2 = plot(lowerBB, title='BB Lower', color=bbLineColor)
+//fill(p1, p2, color=bbFillColor)
+//plot(currentTema, title='TEMA', color=color.yellow, linewidth=2)
+
+bgcolor(pivotcolor)
+plotchar(currentClose, title='', char='■', location=location.bottom, color=superbuy, text='B', textcolor=superbuy, size=size.tiny, editable=false)
+
+//plot(emaShort, title='EMA Short', color=color.lime, linewidth=1)
+//plot(emaMedium, title='EMA Medium', color=color.fuchsia, linewidth=1)
+//plot(emaLong, title='EMA Long', color=color.teal, linewidth=1)
+
