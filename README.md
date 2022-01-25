@@ -9,7 +9,7 @@ progress and should not be used as a financial advice. Always do your own resear
 ## How to use the script?
 Copy the source code, open the Pine Script Editor in TradingView and past the code in
 the editor. Save the script as Sleur-o-Buy. Add the indicator by clicking on Indicators 
-in the top toolbar. Select My Scripts and click Sleur-oBuy to add theindicator to
+in the top toolbar. Select My Scripts and click Sleur-o-Buy to add theindicator to
 your chart.
 
 ## What is shown?
