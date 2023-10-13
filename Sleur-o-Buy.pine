@@ -7,7 +7,7 @@
 
 // add bars from pivot https://stackoverflow.com/questions/63367231/pinescript-get-index-of-pivothigh
 
-indicator("Sleur-o-Buy", overlay = true)
+indicator("Combi-buy-sell-trend", overlay = true)
 
 // Constants and time frames
 temaperiod = 12
@@ -97,5 +97,5 @@ plot(emaLong, title='EMA Long', color=color.purple, linewidth=1)
 //     label.new(bar_index, high *1.05 , str.tostring(timeframe.period))
 
 
-
+alertcondition(condition = (buySignal and currentMFI < 35) or (sellSignal and currentMFI > 70), message = "Script buy/sell alert")
 
